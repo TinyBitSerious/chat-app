@@ -6,10 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Serve static files (like HTML, CSS, JS) from public folder
-app.use(express.static('public'));
+// Serve static files from the current directory
+app.use(express.static(__dirname));
 
-// Basic route for home page
+// Serve index.html when visiting the root URL
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
@@ -18,7 +18,6 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  // Broadcast incoming message to all clients
   socket.on('chat message', (msg) => {
     io.emit('chat message', msg);
   });
@@ -28,7 +27,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server on port 3000
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+// Use the port provided by Render (or 3000 as fallback)
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`listening on *:${PORT}`);
 });
