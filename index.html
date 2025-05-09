@@ -67,7 +67,7 @@
       margin-bottom: 10px;
       padding: 8px 12px;
       border-radius: 10px;
-      max-width: 75%; /* Adjust this value to control the max width of the message */
+      max-width: 75%;
       position: relative;
       word-wrap: break-word;
       width: auto;
@@ -192,7 +192,8 @@
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (input.value) {
-        socket.emit('chat message', { user: username, text: input.value });
+        const message = { user: username, text: input.value };
+        socket.emit('chat message', message);
         input.value = '';
       }
     });
@@ -204,11 +205,36 @@
       item.innerHTML = `
         <div><strong>${msg.user}</strong></div>
         <div>${msg.text}</div>
-        <div class="checkmarks">✔✔</div>
+        <div class="checkmarks">${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}</div>
       `;
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
+
+      // Emit 'message delivered' event when the message is displayed
+      socket.emit('message delivered', msg);
     });
+
+    socket.on('update message', function (msg) {
+      const messageElements = document.querySelectorAll('.message');
+      messageElements.forEach((element) => {
+        const messageText = element.querySelector('div:nth-child(2)').textContent;
+        if (messageText === msg.text) {
+          const checkmarks = element.querySelector('.checkmarks');
+          checkmarks.innerHTML = `${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}`;
+        }
+      });
+    });
+
+    // To simulate message reading after some time
+    setInterval(() => {
+      // Check if message is read (for demo purposes, we mark all messages read)
+      const unreadMessages = document.querySelectorAll('.message:not(.own) .checkmarks');
+      unreadMessages.forEach((checkmark) => {
+        if (!checkmark.innerHTML.includes('✔')) {
+          socket.emit('message read', { user: username, text: checkmark.parentElement.querySelector('div:nth-child(2)').textContent });
+        }
+      });
+    }, 5000);
   </script>
 </body>
 </html>

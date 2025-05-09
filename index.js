@@ -14,24 +14,41 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+let messages = [];  // Store messages with statuses
+
 // Handle chat messages
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  // Handle incoming chat message
+  // When a message is sent
   socket.on('chat message', (msg) => {
-    // Emit the message with a unique id
-    const messageId = Date.now();
-    msg.id = messageId;
-    msg.status = 'delivered'; // Initial status is delivered
+    const message = {
+      user: msg.user,
+      text: msg.text,
+      delivered: false, // message initially undelivered
+      read: false // message initially unread
+    };
 
-    io.emit('chat message', msg);
+    messages.push(message);
+    io.emit('chat message', message); // Emit the message to all clients
+  });
 
-    // Emit "read" status after a delay to simulate message reading
-    setTimeout(() => {
-      msg.status = 'read';
-      io.emit('message status', msg);
-    }, 3000); // Assuming the message is read after 3 seconds
+  // When a user delivers a message
+  socket.on('message delivered', (msg) => {
+    const index = messages.findIndex((m) => m.text === msg.text && m.user === msg.user);
+    if (index !== -1) {
+      messages[index].delivered = true;
+      io.emit('update message', messages[index]); // Update the message on all clients
+    }
+  });
+
+  // When a user reads a message
+  socket.on('message read', (msg) => {
+    const index = messages.findIndex((m) => m.text === msg.text && m.user === msg.user);
+    if (index !== -1) {
+      messages[index].read = true;
+      io.emit('update message', messages[index]); // Update the message on all clients
+    }
   });
 
   socket.on('disconnect', () => {
