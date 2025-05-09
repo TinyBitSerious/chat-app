@@ -61,7 +61,7 @@
       list-style: none;
       margin: 0;
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse; /* Start messages from the bottom */
     }
 
     .message {
@@ -72,15 +72,23 @@
       position: relative;
       word-wrap: break-word;
       display: inline-block;
-      max-width: 70%; /* Ensure messages don't stretch too wide */
-      min-width: 40px; /* Minimum width to avoid squishing */
-      white-space: normal; /* Allow wrapping */
+      max-width: 70%;
+      min-width: 40px;
+      white-space: normal;
+      word-break: break-word;
+      /* Auto-width depending on message content */
+      width: auto;
     }
 
     .own {
       background: #005c99;
       align-self: flex-end;
       color: #fff;
+    }
+
+    .received {
+      background: #444;
+      max-width: 70%; /* Ensuring messages don't take too much space */
     }
 
     #form {
@@ -90,7 +98,6 @@
       position: fixed;
       bottom: 0;
       width: 100%;
-      background: #1a1a1a;
       z-index: 100;
     }
 
@@ -99,7 +106,7 @@
       padding: 10px;
       border: none;
       border-radius: 5px;
-      font-size: 16px; /* Prevent zoom on mobile */
+      font-size: 16px;
       background: #2b2b2b;
       color: #fff;
     }
@@ -134,7 +141,7 @@
 
       .message {
         font-size: 1rem;
-        max-width: 90%; /* Adjust max-width for mobile screens */
+        max-width: 90%; 
       }
 
       #input, #send {
@@ -146,7 +153,7 @@
       }
 
       #messages {
-        padding-bottom: 60px; /* Add padding for the input bar at the bottom */
+        padding-bottom: 60px;
       }
 
       #login-container {
@@ -154,7 +161,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 10px; /* Adjust padding to fit the phone screen */
+        padding: 10px; 
       }
 
       #form {
@@ -173,11 +180,10 @@
         padding: 8px 14px;
       }
 
-      /* More concise message boxes */
       .message {
         padding: 8px 12px;
         font-size: 0.95rem;
-        max-width: 85%; /* More concise width for small screens */
+        max-width: 85%;
       }
 
       .own {
@@ -251,12 +257,13 @@
       const item = document.createElement('li');
       item.className = 'message';
       if (msg.user === username) item.classList.add('own');
+      else item.classList.add('received');
       item.innerHTML = `
         <div><strong>${msg.user}</strong></div>
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;
+      messages.scrollTop = messages.scrollHeight; // Scroll to the newest message
     });
 
     // Handle keyboard behavior on mobile
