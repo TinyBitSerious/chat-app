@@ -37,7 +37,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    #login-container, #chat-container {
+    #login-container {
       flex: 1;
       display: flex;
       justify-content: center;
@@ -47,6 +47,7 @@
 
     #chat-container {
       display: none;
+      flex: 1;
       flex-direction: column;
       height: 100%;
     }
@@ -58,19 +59,20 @@
       list-style: none;
       margin: 0;
       display: flex;
-      flex-direction: column-reverse;
-      padding-bottom: 60px; /* Ensure messages don't overlap the input form */
+      flex-direction: column-reverse; /* Messages start from the bottom */
     }
 
     .message {
       background: #2a2a2a;
       margin-bottom: 10px;
-      padding: 12px 16px;
+      padding: 10px 15px;
       border-radius: 20px;
+      position: relative;
       word-wrap: break-word;
-      max-width: 80%;
-      min-width: 10%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      max-width: 75%;
+      word-break: break-word;
+      font-size: 1rem;
     }
 
     .own {
@@ -79,36 +81,54 @@
       color: #fff;
     }
 
+    .message:before {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 10px;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+    }
+
+    .own:before {
+      right: 10px;
+      left: unset;
+      border-top: 10px solid #005c99;
+    }
+
+    .message.own:before {
+      border-top: 10px solid #2a2a2a;
+      left: unset;
+      right: 10px;
+    }
+
     #form {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
       display: flex;
       padding: 10px;
       background: #1a1a1a;
       align-items: center;
-      z-index: 10;
     }
 
     #input {
       flex: 1;
-      padding: 12px 16px;
+      padding: 10px;
       border: none;
-      border-radius: 20px;
+      border-radius: 5px;
       font-size: 1rem;
       background: #2b2b2b;
       color: #fff;
-      margin-right: 10px;
     }
 
     #send {
-      padding: 12px 20px;
+      padding: 10px 20px;
       background: #007bff;
       color: white;
       border: none;
-      border-radius: 20px;
+      border-radius: 5px;
       cursor: pointer;
+      margin-left: 8px;
     }
 
     input, button {
@@ -116,10 +136,11 @@
     }
 
     /* Mobile Layout Adjustments */
-    @media screen and (max-width: 1080px) {
+    @media screen and (max-width: 1080px) and (max-height: 1920px) {
       body {
         width: 100%;
         height: 100%;
+        display: block;
         margin: 0;
       }
 
@@ -130,9 +151,7 @@
 
       .message {
         font-size: 1rem;
-        max-width: 90%;
-        padding: 10px 14px;
-        border-radius: 20px;
+        max-width: 90%; /* Adjust max-width for mobile screens */
       }
 
       #input, #send {
@@ -140,11 +159,20 @@
       }
 
       #send {
-        padding: 10px 18px;
+        padding: 8px 16px;
+        margin-left: 5px; /* Move the send button even more to the left on mobile */
       }
 
       #messages {
-        padding-bottom: 60px; /* Padding for the input bar */
+        padding-bottom: 60px; /* Add padding for the input bar at the bottom */
+      }
+
+      #login-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
       }
 
       #form {
@@ -155,18 +183,25 @@
 
       #input {
         font-size: 0.9rem;
-        padding: 10px;
+        padding: 8px;
       }
 
       #send {
         font-size: 0.9rem;
-        padding: 10px 16px;
+        padding: 8px 14px;
       }
 
+      /* More concise message boxes */
       .message {
-        padding: 10px 14px;
+        padding: 8px 12px;
         font-size: 0.95rem;
-        max-width: 85%;
+        max-width: 85%; /* More concise width for small screens */
+      }
+
+      .own {
+        background: #005c99;
+        align-self: flex-end;
+        color: #fff;
       }
     }
   </style>
