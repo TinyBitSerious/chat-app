@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-let messages = [];  // Store messages with statuses
+let messages = [];  // Store messages
 
 // Handle chat messages
 io.on('connection', (socket) => {
@@ -24,31 +24,11 @@ io.on('connection', (socket) => {
   socket.on('chat message', (msg) => {
     const message = {
       user: msg.user,
-      text: msg.text,
-      delivered: false, // message initially undelivered
-      read: false // message initially unread
+      text: msg.text
     };
 
     messages.push(message);
     io.emit('chat message', message); // Emit the message to all clients
-  });
-
-  // When a user delivers a message
-  socket.on('message delivered', (msg) => {
-    const index = messages.findIndex((m) => m.text === msg.text && m.user === msg.user);
-    if (index !== -1) {
-      messages[index].delivered = true;
-      io.emit('update message', messages[index]); // Update the message on all clients
-    }
-  });
-
-  // When a user reads a message
-  socket.on('message read', (msg) => {
-    const index = messages.findIndex((m) => m.text === msg.text && m.user === msg.user);
-    if (index !== -1) {
-      messages[index].read = true;
-      io.emit('update message', messages[index]); // Update the message on all clients
-    }
   });
 
   socket.on('disconnect', () => {

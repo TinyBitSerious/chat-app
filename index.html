@@ -65,9 +65,9 @@
     .message {
       background: #2a2a2a;
       margin-bottom: 10px;
-      padding: 8px 12px;
+      padding: 6px 10px;  /* Reduced padding */
       border-radius: 10px;
-      max-width: 75%;
+      max-width: 50%; /* Set to 50% for more concise width */
       position: relative;
       word-wrap: break-word;
       width: auto;
@@ -77,14 +77,6 @@
       background: #005c99;
       align-self: flex-end;
       color: #fff;
-    }
-
-    .checkmarks {
-      font-size: 0.75rem;
-      color: #aaa;
-      position: absolute;
-      right: 8px;
-      bottom: 4px;
     }
 
     #form {
@@ -125,7 +117,7 @@
 
       .message {
         font-size: 0.9rem;
-        max-width: 100%;
+        max-width: 80%; /* Adjust max-width on small screens */
       }
 
       #input, #send {
@@ -205,36 +197,10 @@
       item.innerHTML = `
         <div><strong>${msg.user}</strong></div>
         <div>${msg.text}</div>
-        <div class="checkmarks">${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}</div>
       `;
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
-
-      // Emit 'message delivered' event when the message is displayed
-      socket.emit('message delivered', msg);
     });
-
-    socket.on('update message', function (msg) {
-      const messageElements = document.querySelectorAll('.message');
-      messageElements.forEach((element) => {
-        const messageText = element.querySelector('div:nth-child(2)').textContent;
-        if (messageText === msg.text) {
-          const checkmarks = element.querySelector('.checkmarks');
-          checkmarks.innerHTML = `${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}`;
-        }
-      });
-    });
-
-    // To simulate message reading after some time
-    setInterval(() => {
-      // Check if message is read (for demo purposes, we mark all messages read)
-      const unreadMessages = document.querySelectorAll('.message:not(.own) .checkmarks');
-      unreadMessages.forEach((checkmark) => {
-        if (!checkmark.innerHTML.includes('✔')) {
-          socket.emit('message read', { user: username, text: checkmark.parentElement.querySelector('div:nth-child(2)').textContent });
-        }
-      });
-    }, 5000);
   </script>
 </body>
 </html>
