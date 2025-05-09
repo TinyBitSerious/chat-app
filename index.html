@@ -67,9 +67,10 @@
       margin-bottom: 10px;
       padding: 8px 12px;
       border-radius: 10px;
-      max-width: 80%;
+      max-width: 75%; /* Adjust this value to control the max width of the message */
       position: relative;
       word-wrap: break-word;
+      width: auto;
     }
 
     .own {
@@ -203,17 +204,10 @@
       item.innerHTML = `
         <div><strong>${msg.user}</strong></div>
         <div>${msg.text}</div>
-        <div class="checkmarks">✔</div>
+        <div class="checkmarks">✔✔</div>
       `;
       messages.appendChild(item);
       messages.scrollTop = messages.scrollHeight;
-    });
-
-    socket.on('message status', function (msg) {
-      const message = document.querySelector(`.message[data-id="${msg.id}"]`);
-      if (message) {
-        message.querySelector('.checkmarks').innerText = '✔✔';
-      }
     });
   </script>
 </body>
