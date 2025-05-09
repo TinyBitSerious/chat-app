@@ -1,81 +1,261 @@
-<script>
-  const savedUser = localStorage.getItem('username');
-  const loginContainer = document.getElementById('login-container');
-  const chatContainer = document.getElementById('chat-container');
-  const loginForm = document.getElementById('login-form');
-  const usernameInput = document.getElementById('username');
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Chat App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: #fff;
+      font-family: Helvetica, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-  let username = '';
+    #scrolling-bar {
+      background: #1f1f1f;
+      color: #bbb;
+      white-space: nowrap;
+      overflow: hidden;
+      font-size: 0.85rem;
+      height: 25px;
+      display: flex;
+      align-items: center;
+    }
 
-  if (savedUser) {
-    username = savedUser;
-    loginContainer.style.display = 'none';
-    chatContainer.style.display = 'flex';
-  }
+    #scrolling-bar span {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-text 20s linear infinite;
+    }
 
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    username = usernameInput.value.trim();
-    if (username) {
-      localStorage.setItem('username', username);
+    @keyframes scroll-text {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    #login-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #chat-container {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    #messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      list-style: none;
+      margin: 0;
+      display: flex;
+      flex-direction: column-reverse; /* Messages start from the bottom */
+    }
+
+    .message {
+      background: #2a2a2a;
+      margin-bottom: 10px;
+      padding: 3px 6px; /* Reduced padding */
+      border-radius: 10px;
+      position: relative;
+      word-wrap: break-word;
+      display: inline-block; /* Allowing the box to adjust tightly to content */
+      max-width: none; /* Allow the box to shrink freely */
+      min-width: 0; /* Remove any forced minimum width */
+      width: auto; /* Ensures it adapts based on content */
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .own {
+      background: #005c99;
+      align-self: flex-end;
+      color: #fff;
+    }
+
+    #form {
+      display: flex;
+      padding: 10px;
+      background: #1a1a1a;
+      align-items: center;
+    }
+
+    #input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      background: #2b2b2b;
+      color: #fff;
+    }
+
+    #send {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 8px; /* Make the send button a bit more to the left */
+    }
+
+    input, button {
+      font-family: Helvetica, sans-serif;
+    }
+
+    /* Mobile Layout Adjustments */
+    @media screen and (max-width: 1080px) and (max-height: 1920px) {
+      body {
+        width: 100%;
+        height: 100%;
+        display: block;
+        margin: 0;
+      }
+
+      #scrolling-bar {
+        font-size: 0.75rem;
+        height: 20px;
+      }
+
+      .message {
+        font-size: 1rem;
+        max-width: 90%; /* Adjust max-width for mobile screens */
+      }
+
+      #input, #send {
+        font-size: 1.1rem;
+      }
+
+      #send {
+        padding: 8px 16px;
+        margin-left: 5px; /* Move the send button even more to the left on mobile */
+      }
+
+      #messages {
+        padding-bottom: 60px; /* Add padding for the input bar at the bottom */
+      }
+
+      #login-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px; /* Adjust padding to fit the phone screen */
+      }
+
+      #form {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 5px;
+      }
+
+      #input {
+        font-size: 0.9rem;
+        padding: 8px;
+      }
+
+      #send {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+      }
+
+      /* More concise message boxes */
+      .message {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+        max-width: 85%; /* More concise width for small screens */
+      }
+
+      .own {
+        background: #005c99;
+        align-self: flex-end;
+        color: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="scrolling-bar">
+    <span>This is a test. Hi there. My name is John Doe.</span>
+  </div>
+
+  <div id="login-container">
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Enter your name" required />
+      <button type="submit">Join</button>
+    </form>
+  </div>
+
+  <div id="chat-container">
+    <ul id="messages"></ul>
+    <form id="form">
+      <input id="input" autocomplete="off" placeholder="Type a message..." />
+      <button id="send">Send</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const savedUser = localStorage.getItem('username');
+    const loginContainer = document.getElementById('login-container');
+    const chatContainer = document.getElementById('chat-container');
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+
+    let username = '';
+
+    if (savedUser) {
+      username = savedUser;
       loginContainer.style.display = 'none';
       chatContainer.style.display = 'flex';
     }
-  });
 
-  const socket = io();
-  const form = document.getElementById('form');
-  const input = document.getElementById('input');
-  const messages = document.getElementById('messages');
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (input.value) {
-      const message = { user: username, text: input.value };
-      socket.emit('chat message', message);
-      input.value = '';
-    }
-  });
-
-  socket.on('chat message', function (msg) {
-    const item = document.createElement('li');
-    item.className = 'message';
-    if (msg.user === username) item.classList.add('own');
-    item.innerHTML = `
-      <div><strong>${msg.user}</strong></div>
-      <div>${msg.text}</div>
-      <div class="checkmarks">
-        ${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}
-      </div>
-    `;
-    messages.appendChild(item);
-    messages.scrollTop = messages.scrollHeight;
-
-    // Emit 'message delivered' event when the message is displayed
-    socket.emit('message delivered', msg);
-  });
-
-  socket.on('update message', function (msg) {
-    const messageElements = document.querySelectorAll('.message');
-    messageElements.forEach((element) => {
-      const messageText = element.querySelector('div:nth-child(2)').textContent;
-      if (messageText === msg.text) {
-        const checkmarks = element.querySelector('.checkmarks');
-        checkmarks.innerHTML = `
-          ${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}
-        `;
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      username = usernameInput.value.trim();
+      if (username) {
+        localStorage.setItem('username', username);
+        loginContainer.style.display = 'none';
+        chatContainer.style.display = 'flex';
       }
     });
-  });
 
-  // To simulate message reading after some time
-  setInterval(() => {
-    // Check if message is read (for demo purposes, we mark all messages read)
-    const unreadMessages = document.querySelectorAll('.message:not(.own) .checkmarks');
-    unreadMessages.forEach((checkmark) => {
-      if (!checkmark.innerHTML.includes('✔')) {
-        socket.emit('message read', { user: username, text: checkmark.parentElement.querySelector('div:nth-child(2)').textContent });
+    const socket = io();
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (input.value) {
+        const message = { user: username, text: input.value };
+        socket.emit('chat message', message);
+        input.value = '';
       }
     });
-  }, 5000);
-</script>
+
+    socket.on('chat message', function (msg) {
+      const item = document.createElement('li');
+      item.className = 'message';
+      if (msg.user === username) item.classList.add('own');
+      item.innerHTML = `
+        <div><strong>${msg.user}</strong></div>
+        <div>${msg.text}</div>
+      `;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+  </script>
+</body>
+</html>
