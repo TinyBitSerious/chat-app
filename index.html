@@ -61,22 +61,21 @@
       list-style: none;
       margin: 0;
       display: flex;
-      flex-direction: column-reverse; /* Start messages from the bottom */
+      flex-direction: column-reverse;
     }
 
     .message {
       background: #2a2a2a;
       margin-bottom: 10px;
-      padding: 6px 10px;
+      padding: 3px 6px; /* Reduced padding for minimum size */
       border-radius: 10px;
       position: relative;
       word-wrap: break-word;
       display: inline-block;
       max-width: 70%;
-      min-width: 40px;
+      min-width: 30px; /* Very small minimum width */
       white-space: normal;
       word-break: break-word;
-      /* Auto-width depending on message content */
       width: auto;
     }
 
@@ -88,7 +87,8 @@
 
     .received {
       background: #444;
-      max-width: 70%; /* Ensuring messages don't take too much space */
+      max-width: 60%; /* Maximum width for received messages */
+      padding: 3px 6px; /* Small padding for tight text box */
     }
 
     #form {
