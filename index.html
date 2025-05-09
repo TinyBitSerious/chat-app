@@ -13,7 +13,6 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
     }
 
     #scrolling-bar {
@@ -51,7 +50,6 @@
       flex: 1;
       flex-direction: column;
       height: 100%;
-      position: relative;
     }
 
     #messages {
@@ -61,23 +59,22 @@
       list-style: none;
       margin: 0;
       display: flex;
-      flex-direction: column-reverse; /* Reverse the order to start from the bottom */
-      position: relative;
+      flex-direction: column-reverse; /* Messages start from the bottom */
     }
 
     .message {
       background: #2a2a2a;
       margin-bottom: 10px;
-      padding: 3px 6px; /* Reduced padding for minimum size */
+      padding: 3px 6px; /* Reduced padding */
       border-radius: 10px;
       position: relative;
       word-wrap: break-word;
-      display: inline-block;
-      max-width: 70%;
-      min-width: 30px; /* Very small minimum width */
+      display: inline-block; /* Allowing the box to adjust tightly to content */
+      max-width: none; /* Allow the box to shrink freely */
+      min-width: 0; /* Remove any forced minimum width */
+      width: auto; /* Ensures it adapts based on content */
       white-space: normal;
       word-break: break-word;
-      width: auto;
     }
 
     .own {
@@ -86,20 +83,11 @@
       color: #fff;
     }
 
-    .received {
-      background: #444;
-      max-width: 60%; /* Maximum width for received messages */
-      padding: 3px 6px; /* Small padding for tight text box */
-    }
-
     #form {
       display: flex;
       padding: 10px;
       background: #1a1a1a;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      z-index: 100;
+      align-items: center;
     }
 
     #input {
@@ -107,19 +95,19 @@
       padding: 10px;
       border: none;
       border-radius: 5px;
-      font-size: 16px;
+      font-size: 1rem;
       background: #2b2b2b;
       color: #fff;
     }
 
     #send {
-      margin-left: 10px;
       padding: 10px 20px;
       background: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-left: 8px; /* Make the send button a bit more to the left */
     }
 
     input, button {
@@ -142,7 +130,7 @@
 
       .message {
         font-size: 1rem;
-        max-width: 90%; 
+        max-width: 90%; /* Adjust max-width for mobile screens */
       }
 
       #input, #send {
@@ -151,10 +139,11 @@
 
       #send {
         padding: 8px 16px;
+        margin-left: 5px; /* Move the send button even more to the left on mobile */
       }
 
       #messages {
-        padding-bottom: 60px;
+        padding-bottom: 60px; /* Add padding for the input bar at the bottom */
       }
 
       #login-container {
@@ -162,7 +151,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 10px; 
+        padding: 10px; /* Adjust padding to fit the phone screen */
       }
 
       #form {
@@ -181,10 +170,11 @@
         padding: 8px 14px;
       }
 
+      /* More concise message boxes */
       .message {
         padding: 8px 12px;
         font-size: 0.95rem;
-        max-width: 85%;
+        max-width: 85%; /* More concise width for small screens */
       }
 
       .own {
@@ -222,6 +212,7 @@
     const chatContainer = document.getElementById('chat-container');
     const loginForm = document.getElementById('login-form');
     const usernameInput = document.getElementById('username');
+
     let username = '';
 
     if (savedUser) {
@@ -258,24 +249,12 @@
       const item = document.createElement('li');
       item.className = 'message';
       if (msg.user === username) item.classList.add('own');
-      else item.classList.add('received');
       item.innerHTML = `
         <div><strong>${msg.user}</strong></div>
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight; // Scroll to the newest message
-    });
-
-    // Handle keyboard behavior on mobile
-    window.addEventListener('resize', function() {
-      const inputField = document.getElementById('input');
-      const form = document.getElementById('form');
-      if (document.activeElement === inputField) {
-        setTimeout(function() {
-          form.scrollIntoView({ behavior: 'smooth' });
-        }, 300);
-      }
+      messages.scrollTop = messages.scrollHeight;
     });
   </script>
 </body>
