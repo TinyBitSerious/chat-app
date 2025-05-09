@@ -59,7 +59,8 @@
       list-style: none;
       margin: 0;
       display: flex;
-      flex-direction: column-reverse; /* Messages start from the bottom */
+      flex-direction: column; /* Normal stacking order */
+      justify-content: flex-end; /* Align new messages at the bottom */
     }
 
     .message {
@@ -272,7 +273,7 @@
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom to keep the latest message visible
+      messages.scrollTop = messages.scrollHeight;  // Ensures the new message is visible
     });
   </script>
 </body>
