@@ -1,262 +1,81 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Chat App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      background-color: #f7f7f7; /* Light gray background for the overall app */
-      color: #333; /* Dark text color */
-      font-family: Helvetica, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+<script>
+  const savedUser = localStorage.getItem('username');
+  const loginContainer = document.getElementById('login-container');
+  const chatContainer = document.getElementById('chat-container');
+  const loginForm = document.getElementById('login-form');
+  const usernameInput = document.getElementById('username');
 
-    #scrolling-bar {
-      background: #1f1f1f;
-      color: #bbb;
-      white-space: nowrap;
-      overflow: hidden;
-      font-size: 0.85rem;
-      height: 25px;
-      display: flex;
-      align-items: center;
-    }
+  let username = '';
 
-    #scrolling-bar span {
-      display: inline-block;
-      padding-left: 100%;
-      animation: scroll-text 20s linear infinite;
-    }
+  if (savedUser) {
+    username = savedUser;
+    loginContainer.style.display = 'none';
+    chatContainer.style.display = 'flex';
+  }
 
-    @keyframes scroll-text {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-
-    #login-container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    #chat-container {
-      display: none;
-      flex: 1;
-      flex-direction: column;
-      height: 100%;
-      padding-bottom: 50px; /* Ensure space for input */
-    }
-
-    #messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      list-style: none;
-      margin: 0;
-      display: flex;
-      flex-direction: column-reverse; /* Start messages from the bottom */
-    }
-
-    .message {
-      background: #dcf8c6; /* Light green for received messages (like Telegram) */
-      margin-bottom: 10px;
-      padding: 10px 15px;
-      border-radius: 18px;
-      position: relative;
-      word-wrap: break-word;
-      max-width: 75%;
-      display: inline-block;
-      font-size: 1rem;
-    }
-
-    .own {
-      background: #0078fe; /* Blue background for sent messages (like Telegram) */
-      color: white;
-      align-self: flex-end;
-    }
-
-    .received {
-      background: #e5e5ea; /* Light gray background for received messages */
-      color: #000;
-      align-self: flex-start;
-    }
-
-    #form {
-      display: flex;
-      padding: 10px;
-      background: #ffffff;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      align-items: center;
-      z-index: 2;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-
-    #input {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 18px;
-      font-size: 1rem;
-      background: #f1f1f1;
-      color: #333;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    #send {
-      margin-left: 12px; /* Moved send button slightly left */
-      padding: 10px 20px;
-      background: #0078fe;
-      color: white;
-      border: none;
-      border-radius: 18px;
-      cursor: pointer;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-
-    input, button {
-      font-family: Helvetica, sans-serif;
-    }
-
-    /* Mobile Layout Adjustments */
-    @media screen and (max-width: 1080px) and (max-height: 1920px) {
-      body {
-        width: 100%;
-        height: 100%;
-        display: block;
-        margin: 0;
-      }
-
-      #scrolling-bar {
-        font-size: 0.75rem;
-        height: 20px;
-      }
-
-      .message {
-        font-size: 1rem;
-        max-width: 90%; /* Adjust max-width for mobile screens */
-      }
-
-      #input, #send {
-        font-size: 1.1rem;
-      }
-
-      #send {
-        padding: 8px 16px;
-      }
-
-      #messages {
-        padding-bottom: 60px; /* Add padding for the input bar at the bottom */
-      }
-
-      #login-container {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px; /* Adjust padding to fit the phone screen */
-      }
-
-      #form {
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 5px;
-      }
-
-      #input {
-        font-size: 0.9rem;
-        padding: 8px;
-      }
-
-      #send {
-        font-size: 0.9rem;
-        padding: 8px 14px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="scrolling-bar">
-    <span>This is a test. Hi there. My name is John Doe.</span>
-  </div>
-
-  <div id="login-container">
-    <form id="login-form">
-      <input type="text" id="username" placeholder="Enter your name" required />
-      <button type="submit">Join</button>
-    </form>
-  </div>
-
-  <div id="chat-container">
-    <ul id="messages"></ul>
-    <form id="form">
-      <input id="input" autocomplete="off" placeholder="Type a message..." />
-      <button id="send">Send</button>
-    </form>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const savedUser = localStorage.getItem('username');
-    const loginContainer = document.getElementById('login-container');
-    const chatContainer = document.getElementById('chat-container');
-    const loginForm = document.getElementById('login-form');
-    const usernameInput = document.getElementById('username');
-
-    let username = '';
-
-    if (savedUser) {
-      username = savedUser;
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    username = usernameInput.value.trim();
+    if (username) {
+      localStorage.setItem('username', username);
       loginContainer.style.display = 'none';
       chatContainer.style.display = 'flex';
     }
+  });
 
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      username = usernameInput.value.trim();
-      if (username) {
-        localStorage.setItem('username', username);
-        loginContainer.style.display = 'none';
-        chatContainer.style.display = 'flex';
+  const socket = io();
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const messages = document.getElementById('messages');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (input.value) {
+      const message = { user: username, text: input.value };
+      socket.emit('chat message', message);
+      input.value = '';
+    }
+  });
+
+  socket.on('chat message', function (msg) {
+    const item = document.createElement('li');
+    item.className = 'message';
+    if (msg.user === username) item.classList.add('own');
+    item.innerHTML = `
+      <div><strong>${msg.user}</strong></div>
+      <div>${msg.text}</div>
+      <div class="checkmarks">
+        ${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}
+      </div>
+    `;
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+
+    // Emit 'message delivered' event when the message is displayed
+    socket.emit('message delivered', msg);
+  });
+
+  socket.on('update message', function (msg) {
+    const messageElements = document.querySelectorAll('.message');
+    messageElements.forEach((element) => {
+      const messageText = element.querySelector('div:nth-child(2)').textContent;
+      if (messageText === msg.text) {
+        const checkmarks = element.querySelector('.checkmarks');
+        checkmarks.innerHTML = `
+          ${msg.delivered ? '✔' : ''} ${msg.read ? '✔' : ''}
+        `;
       }
     });
+  });
 
-    const socket = io();
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const messages = document.getElementById('messages');
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (input.value) {
-        const message = { user: username, text: input.value };
-        socket.emit('chat message', message);
-        input.value = '';
+  // To simulate message reading after some time
+  setInterval(() => {
+    // Check if message is read (for demo purposes, we mark all messages read)
+    const unreadMessages = document.querySelectorAll('.message:not(.own) .checkmarks');
+    unreadMessages.forEach((checkmark) => {
+      if (!checkmark.innerHTML.includes('✔')) {
+        socket.emit('message read', { user: username, text: checkmark.parentElement.querySelector('div:nth-child(2)').textContent });
       }
     });
-
-    socket.on('chat message', function (msg) {
-      const item = document.createElement('li');
-      item.className = 'message';
-      if (msg.user === username) {
-        item.classList.add('own');
-      } else {
-        item.classList.add('received');
-      }
-      item.innerHTML = `
-        <div><strong>${msg.user}</strong></div>
-        <div>${msg.text}</div>
-      `;
-      messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight; // Scroll to the bottom after each new message
-    });
-  </script>
-</body>
-</html>
+  }, 5000);
+</script>
