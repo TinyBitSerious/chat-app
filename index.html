@@ -63,7 +63,7 @@
     }
 
     .message {
-      background: #2a2a2a;
+      background: #2a2a2a; /* Default gray background for received messages */
       margin-bottom: 10px;
       padding: 10px 15px;
       border-radius: 20px;
@@ -76,11 +76,12 @@
     }
 
     .own {
-      background: #005c99;
+      background: #005c99; /* Blue background for sent messages */
       align-self: flex-end;
       color: #fff;
     }
 
+    /* Tail for received messages (left side) */
     .message:before {
       content: '';
       position: absolute;
@@ -90,18 +91,14 @@
       height: 0;
       border-left: 10px solid transparent;
       border-right: 10px solid transparent;
+      border-top: 10px solid #2a2a2a; /* Tail color matches gray bubble */
     }
 
+    /* Tail for sent messages (right side) */
     .own:before {
       right: 10px;
       left: unset;
-      border-top: 10px solid #005c99;
-    }
-
-    .message.own:before {
-      border-top: 10px solid #2a2a2a;
-      left: unset;
-      right: 10px;
+      border-top: 10px solid #005c99; /* Tail color matches blue bubble */
     }
 
     #form {
