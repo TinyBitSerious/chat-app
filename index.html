@@ -255,15 +255,22 @@
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (input.value) {
-        const message = { user: username, text: input.value };
-        socket.emit('chat message', message);
-        input.value = '';
-      }
+    // Fetch and display the chat history when the user first connects
+    socket.on('chat history', function (history) {
+      history.forEach(function (msg) {
+        const item = document.createElement('li');
+        item.className = 'message';
+        if (msg.user === username) item.classList.add('own');
+        item.innerHTML = ` 
+          <div><strong>${msg.user}</strong></div>
+          <div>${msg.text}</div>
+        `;
+        messages.appendChild(item);
+      });
+      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom after loading history
     });
 
+    // Handle incoming new messages
     socket.on('chat message', function (msg) {
       const item = document.createElement('li');
       item.className = 'message';
@@ -273,7 +280,17 @@
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;  // Ensures the new message is visible
+      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom
+    });
+
+    // Handle sending new messages
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (input.value) {
+        const message = { user: username, text: input.value };
+        socket.emit('chat message', message);
+        input.value = '';
+      }
     });
   </script>
 </body>
