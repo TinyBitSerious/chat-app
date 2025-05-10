@@ -1,57 +1,73 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Path to the messages file
+const messagesFilePath = path.join(__dirname, 'messages.json');
+
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
 // Serve index.html when visiting the root URL
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(__dirname + '/index.html');
 });
 
-// SQLite database setup
-const db = new sqlite3.Database('./chat.db', (err) => {
-  if (err) {
-    console.error('Error opening database', err);
-  } else {
-    db.run(`CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user TEXT,
-      text TEXT,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
+let messages = [];  // Store messages temporarily in memory
+
+// Load existing messages from the file
+function loadMessages() {
+  try {
+    const data = fs.readFileSync(messagesFilePath, 'utf8');
+    messages = JSON.parse(data);
+  } catch (err) {
+    console.log('No previous messages or error reading file:', err);
+    messages = [];
   }
-});
+}
+
+// Save the messages to the file
+function saveMessages() {
+  fs.writeFileSync(messagesFilePath, JSON.stringify(messages, null, 2));
+}
+
+// Clean messages that are older than 24 hours
+function cleanupMessages() {
+  const now = Date.now();
+  messages = messages.filter(message => now - message.timestamp < 24 * 60 * 60 * 1000);
+  saveMessages();  // Save the filtered messages back to the file
+}
+
+// Load messages when the server starts
+loadMessages();
+
+// Set an interval to clean up messages every 1 hour
+setInterval(cleanupMessages, 60 * 60 * 1000);  // Run cleanup every hour
 
 // Handle chat messages
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  // Send all past messages on connect
-  db.all('SELECT user, text FROM messages ORDER BY timestamp ASC', [], (err, rows) => {
-    if (!err) {
-      rows.forEach((row) => {
-        socket.emit('chat message', row);
-      });
-    }
-  });
+  // Send existing messages to the new client
+  socket.emit('chat history', messages);
 
-  // When a new message is sent
+  // When a message is sent
   socket.on('chat message', (msg) => {
-    db.run('INSERT INTO messages (user, text) VALUES (?, ?)', [msg.user, msg.text], (err) => {
-      if (err) {
-        console.error('DB insert error:', err);
-        return;
-      }
-      io.emit('chat message', msg); // Send to all clients
-    });
+    const message = {
+      user: msg.user,
+      text: msg.text,
+      timestamp: Date.now()  // Add a timestamp to each message
+    };
+
+    messages.push(message);
+    saveMessages();  // Save the updated message list to the file
+    io.emit('chat message', message); // Emit the message to all clients
   });
 
   socket.on('disconnect', () => {
