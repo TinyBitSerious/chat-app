@@ -55,12 +55,14 @@
     #messages {
       flex: 1;
       padding: 10px;
-      overflow-y: auto;
+      overflow-y: auto; /* Allow scrolling when needed */
       list-style: none;
       margin: 0;
       display: flex;
       flex-direction: column; /* Normal stacking order */
       justify-content: flex-end; /* Align new messages at the bottom */
+      scroll-behavior: smooth; /* Smooth scrolling */
+      max-height: calc(100vh - 120px); /* Adjust the max-height to fit the screen */
     }
 
     .message {
@@ -255,22 +257,15 @@
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
 
-    // Fetch and display the chat history when the user first connects
-    socket.on('chat history', function (history) {
-      history.forEach(function (msg) {
-        const item = document.createElement('li');
-        item.className = 'message';
-        if (msg.user === username) item.classList.add('own');
-        item.innerHTML = ` 
-          <div><strong>${msg.user}</strong></div>
-          <div>${msg.text}</div>
-        `;
-        messages.appendChild(item);
-      });
-      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom after loading history
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (input.value) {
+        const message = { user: username, text: input.value };
+        socket.emit('chat message', message);
+        input.value = '';
+      }
     });
 
-    // Handle incoming new messages
     socket.on('chat message', function (msg) {
       const item = document.createElement('li');
       item.className = 'message';
@@ -280,17 +275,7 @@
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom
-    });
-
-    // Handle sending new messages
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (input.value) {
-        const message = { user: username, text: input.value };
-        socket.emit('chat message', message);
-        input.value = '';
-      }
+      messages.scrollTop = messages.scrollHeight;  // Ensures the new message is visible
     });
   </script>
 </body>
