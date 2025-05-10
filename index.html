@@ -5,11 +5,6 @@
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html {
-      height: 100%;
-      overflow: hidden;
-    }
-
     body {
       margin: 0;
       background-color: #121212;
@@ -251,6 +246,23 @@
     </form>
   </div>
 
+  <button id="scroll-bottom-btn" style="
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    padding: 10px 14px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+    font-family: Helvetica, sans-serif;
+    z-index: 1000;
+  ">
+    ↓ Jump to Bottom
+  </button>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const savedUser = localStorage.getItem('username');
@@ -281,8 +293,17 @@
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const messages = document.getElementById('messages');
+    let autoScrollEnabled = true;
 
-    // Fetch and display the chat history when the user first connects
+    // detect if user has scrolled up
+    messages.addEventListener('scroll', () => {
+      const threshold = 50;
+      const atBottom =
+        messages.scrollHeight - messages.scrollTop - messages.clientHeight < threshold;
+      autoScrollEnabled = atBottom;
+    });
+
+    // load history
     socket.on('chat history', function (history) {
       history.forEach(function (msg) {
         const item = document.createElement('li');
@@ -294,10 +315,12 @@
         `;
         messages.appendChild(item);
       });
-      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom after loading history
+      if (autoScrollEnabled) {
+        messages.scrollTop = messages.scrollHeight;
+      }
     });
 
-    // Handle incoming new messages
+    // new message
     socket.on('chat message', function (msg) {
       const item = document.createElement('li');
       item.className = 'message';
@@ -307,10 +330,13 @@
         <div>${msg.text}</div>
       `;
       messages.appendChild(item);
-      messages.scrollTop = messages.scrollHeight;  // Scroll to the bottom
+
+      if (autoScrollEnabled) {
+        messages.scrollTop = messages.scrollHeight;
+      }
     });
 
-    // Handle sending new messages
+    // send message
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (input.value) {
@@ -318,6 +344,21 @@
         socket.emit('chat message', message);
         input.value = '';
       }
+    });
+
+    // scroll to bottom button
+    const scrollBtn = document.getElementById('scroll-bottom-btn');
+
+    messages.addEventListener('scroll', () => {
+      const threshold = 50;
+      const atBottom =
+        messages.scrollHeight - messages.scrollTop - messages.clientHeight < threshold;
+      autoScrollEnabled = atBottom;
+      scrollBtn.style.display = atBottom ? 'none' : 'block';
+    });
+
+    scrollBtn.addEventListener('click', () => {
+      messages.scrollTop = messages.scrollHeight;
     });
   </script>
 </body>
