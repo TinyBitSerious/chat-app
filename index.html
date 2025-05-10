@@ -16,6 +16,26 @@
     }
 
     #scrolling-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #1f1f1f;
+      color: #bbb;
+      white-space: nowrap;
+      overflow: hidden;
+      font-size: 0.85rem;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    body {
+      padding-top: 25px; /* match the height of the scrolling bar */
+    }
+
+    #scrolling-bar {
       background: #1f1f1f;
       color: #bbb;
       white-space: nowrap;
