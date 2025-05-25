@@ -1,71 +1,59 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const fs = require('fs');
-const path = require('path');
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import './index.css'
+import ClothingSite from './ClothingSite'
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <ClothingSite />
+  </React.StrictMode>
+)
+const { useState, useEffect } = React
 
-// Serve static files from the current directory
-app.use(express.static(__dirname));
+const clothes = [
+  {
+    name: "VoidTech Hoodie",
+    price: "$85",
+    img: "/images/voidtech-hoodie.png",
+  },
+  {
+    name: "DreamHack Cargo",
+    price: "$70",
+    img: "/images/dreamhack-cargo.png",
+  },
+  {
+    name: "404 Mesh Shirt",
+    price: "$55",
+    img: "/images/404-mesh.png",
+  },
+]
 
-// Serve index.html when visiting the root URL
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
-
-// Load saved messages from the JSON file, or create an empty array if not found
-const messagesFilePath = path.join(__dirname, 'messages.json');
-let messages = [];
-
-// Attempt to read the messages from the file on server start
-if (fs.existsSync(messagesFilePath)) {
-  const data = fs.readFileSync(messagesFilePath, 'utf8');
-  try {
-    messages = JSON.parse(data);
-  } catch (err) {
-    console.log('Error reading messages file, starting with empty messages array');
-    messages = [];
-  }
+function ClothingSite() {
+  return React.createElement(
+    'div',
+    { style: { backgroundColor: 'black', minHeight: '100vh', color: 'white', fontFamily: 'monospace' } },
+    React.createElement('header', { style: { display: 'flex', justifyContent: 'space-between', padding: '1rem', borderBottom: '1px solid #333' } },
+      React.createElement('div', { style: { fontSize: '1.5rem', letterSpacing: '0.2rem' } }, 'AURA'),
+      React.createElement('nav', { style: { display: 'flex', gap: '1rem', alignItems: 'center' } },
+        React.createElement('input', { placeholder: 'search drop...', style: { backgroundColor: '#111', color: 'white', border: '1px solid #444', padding: '0.3rem 0.5rem', fontSize: '0.9rem' } }),
+        React.createElement('div', { style: { cursor: 'pointer' } }, '🛒'),
+        React.createElement('div', { style: { cursor: 'pointer' } }, '☰')
+      )
+    ),
+    React.createElement('main', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: '1rem', padding: '1rem' } },
+      clothes.map((item, i) =>
+        React.createElement('div', { key: i, style: { backgroundColor: '#111', borderRadius: '1rem', border: '1px solid #333', overflow: 'hidden', boxShadow: '0 0 10px #000' } },
+          React.createElement('img', { src: item.img, alt: item.name, style: { width: '100%', height: '250px', objectFit: 'cover' } }),
+          React.createElement('div', { style: { padding: '0.8rem' } },
+            React.createElement('div', { style: { fontSize: '1.1rem', marginBottom: '0.3rem' } }, item.name),
+            React.createElement('div', { style: { color: '#888', fontSize: '0.9rem' } }, item.price),
+            React.createElement('button', { style: { marginTop: '0.6rem', width: '100%', backgroundColor: 'white', color: 'black', border: 'none', padding: '0.5rem', borderRadius: '0.5rem', cursor: 'pointer' } }, 'add to ritual')
+          )
+        )
+      )
+    ),
+    React.createElement('footer', { style: { padding: '1rem', textAlign: 'center', fontSize: '0.8rem', color: '#666', borderTop: '1px solid #333' } }, '© 2025 AURA. no gods no masters')
+  )
 }
 
-// Handle chat messages
-io.on('connection', (socket) => {
-  console.log('a user connected');
-
-  // Send the existing messages when a new user connects
-  socket.emit('chat history', messages);
-
-  // When a message is sent
-  socket.on('chat message', (msg) => {
-    const message = {
-      user: msg.user,
-      text: msg.text,
-      timestamp: Date.now()
-    };
-
-    messages.push(message);
-    fs.writeFileSync(messagesFilePath, JSON.stringify(messages, null, 2)); // Save to file
-
-    io.emit('chat message', message); // Emit the message to all clients
-  });
-
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
-});
-
-// Cleanup messages older than 24 hours
-setInterval(() => {
-  const now = Date.now();
-  messages = messages.filter(message => now - message.timestamp < 24 * 60 * 60 * 1000); // Keep only messages from the last 24 hours
-  fs.writeFileSync(messagesFilePath, JSON.stringify(messages, null, 2)); // Save the updated messages
-}, 60 * 60 * 1000); // Run every hour
-
-// Use the port provided by Render (or 3000 as fallback)
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`listening on *:${PORT}`);
-});
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ClothingSite))
